@@ -7,7 +7,7 @@ pub struct HomebrewClient;
 
 impl HomebrewClient {
     pub fn load_info() -> Result<HomebrewInfo> {
-        let output = HomebrewClient::run_cmd(&["info", "--json", "v2", "--installed"])?;
+        let output = HomebrewClient::run_cmd(&["info", "--json=v2", "--installed"])?;
         HomebrewInfo::parse(&output)
     }
 
