@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"binary_file_patterns": ["target/**"]
+		}
+	],
+	"settings": {
+		"LSP": {
+			"rust-analyzer": {
+				"enabled": true
+			}
+		}
+	}
+}

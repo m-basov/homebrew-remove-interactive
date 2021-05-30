@@ -1,0 +1,13 @@
+[package]
+name = "homebrew-remove-interactive"
+version = "0.1.0"
+authors = ["Mykola Basov <github@mbasov.com>"]
+edition = "2018"
+
+[dependencies]
+crossterm = "0.19"
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+petgraph = { version = "0.5" }
+tui = { version = "0.15", default-features = false, features = ["crossterm"] }
+anyhow = "1.0"
