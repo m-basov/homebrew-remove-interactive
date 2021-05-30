@@ -32,7 +32,7 @@ impl Component for FormulaInfo {
                 Spans::from(""),
                 // Dependants
                 Spans::from(Span::styled(
-                    "Depentants",
+                    "Dependants",
                     Style::default().add_modifier(Modifier::UNDERLINED),
                 )),
                 Spans::from(if dependentants.is_empty() {
