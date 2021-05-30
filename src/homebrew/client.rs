@@ -16,6 +16,11 @@ impl HomebrewClient {
         Ok(())
     }
 
+    pub fn ensure_exists() -> Result<()> {
+        HomebrewClient::run_cmd(&["--version"])?;
+        Ok(())
+    }
+
     fn run_cmd(args: &[&str]) -> Result<String> {
         if cfg!(target_os = "windows") {
             println!("args: {:#?}", args);
@@ -24,7 +29,7 @@ impl HomebrewClient {
             let output = Command::new("brew")
                 .args(args)
                 .output()
-                .with_context(|| format!("Cannot execute command with args: {:?}", args))?;
+                .with_context(|| format!("Cannot execute command: brew {:?}", args.join(" ")))?;
 
             Ok(String::from_utf8(output.stdout)?)
         }

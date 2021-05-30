@@ -6,6 +6,8 @@ use homebrew::{FormulaeMap, HomebrewClient, HomebrewDependencyGraph};
 use ui::UI;
 
 fn main() -> Result<()> {
+    HomebrewClient::ensure_exists()?;
+
     let info = HomebrewClient::load_info()?;
     let formulae_map = FormulaeMap::build(&info.formulae);
     let graph = HomebrewDependencyGraph::build(&formulae_map, &info.formulae);
