@@ -29,7 +29,7 @@ impl HomebrewClient {
             let output = Command::new("brew")
                 .args(args)
                 .output()
-                .with_context(|| format!("Cannot execute command: brew {:?}", args.join(" ")))?;
+                .with_context(|| format!("Cannot execute command: brew {}", args.join(" ")))?;
 
             Ok(String::from_utf8(output.stdout)?)
         }
