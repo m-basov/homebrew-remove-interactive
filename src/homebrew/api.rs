@@ -29,75 +29,67 @@ pub struct HomebrewFormulaInstalled {
     pub version: String,
 }
 
-pub struct FormulaeMap<'a>(HashMap<&'a str, &'a HomebrewFormula>);
-
-impl<'a> FormulaeMap<'a> {
-    pub fn build(formulae: &[HomebrewFormula]) -> FormulaeMap {
-        let mut map = HashMap::new();
-
-        for formula in formulae {
-            map.insert(formula.name.as_str(), formula);
-            for alias in &formula.aliases {
-                map.insert(alias.as_str(), formula);
-            }
-        }
-
-        FormulaeMap(map)
-    }
-
-    pub fn get(&self, key: &str) -> Option<&HomebrewFormula> {
-        self.0.get(key).copied()
-    }
+pub struct HomebrewGraph {
+    graph: Graph<usize, u8>,
+    formulae_map: HashMap<String, usize>,
 }
 
-pub struct HomebrewDependencyGraph<'a> {
-    pub graph: Graph<&'a HomebrewFormula, u8>,
-    pub node_map: HashMap<&'a str, NodeIndex>,
-}
-
-impl<'a> HomebrewDependencyGraph<'a> {
-    pub fn build(
-        formulae_map: &'a FormulaeMap,
-        formulae: &[HomebrewFormula],
-    ) -> HomebrewDependencyGraph<'a> {
+impl HomebrewGraph {
+    pub fn build(formulae: &[HomebrewFormula]) -> HomebrewGraph {
+        let formulae_map = HomebrewGraph::build_formulae_map(formulae);
         let mut graph = Graph::with_capacity(formulae.len(), formulae.len() * 2);
-        let mut node_map = HashMap::new();
 
         for formula in formulae {
-            if let Some(formula) = formulae_map.get(formula.name.as_str()) {
-                let node = graph.add_node(formula);
-                node_map.insert(formula.name.as_str(), node);
+            if let Some(idx) = formulae_map.get(&formula.name).copied() {
+                graph.add_node(idx);
             } else {
-                eprintln!("formula not found: {}", formula.name);
+                unimplemented!();
             }
         }
 
-        let mut dependency_graph = HomebrewDependencyGraph { graph, node_map };
+        let mut dependency_graph = HomebrewGraph {
+            graph,
+            formulae_map,
+        };
         dependency_graph.build_graph_edges(formulae);
         dependency_graph
     }
 
+    fn build_formulae_map(formulae: &[HomebrewFormula]) -> HashMap<String, usize> {
+        let mut formulae_map = HashMap::new();
+
+        for (idx, formula) in formulae.iter().enumerate() {
+            formulae_map.insert(String::from(&formula.name), idx);
+            for alias in &formula.aliases {
+                formulae_map.insert(String::from(alias), idx);
+            }
+        }
+
+        formulae_map
+    }
+
     fn build_graph_edges(&mut self, formulae: &[HomebrewFormula]) {
-        for formula in formulae {
-            if let Some(source_node) = self.node_map.get(formula.name.as_str()).copied() {
-                for dependency in &formula.dependencies {
-                    if let Some(target_node) = self.node_map.get(dependency.as_str()).copied() {
-                        self.graph.add_edge(source_node, target_node, 0);
-                    }
+        for (source_idx, formula) in formulae.iter().enumerate() {
+            let source_node = NodeIndex::new(source_idx);
+            for dependency in &formula.dependencies {
+                if let Some(target_idx) = self.formulae_map.get(dependency).copied() {
+                    let target_node = NodeIndex::new(target_idx);
+                    self.graph.add_edge(source_node, target_node, 0);
                 }
             }
         }
     }
 
-    pub fn resolve_dependants(&self, name: &str) -> Vec<&str> {
+    pub fn resolve_dependants(&self, name: &str) -> Vec<usize> {
         let mut dependants = Vec::new();
 
-        if let Some(node) = self.node_map.get(name).copied() {
+        if let Some(idx) = self.formulae_map.get(name).copied() {
+            let node = NodeIndex::new(idx);
             let graph = Reversed(&self.graph);
             let mut dfs = Dfs::new(&graph, node);
             dfs.next(&graph);
             while let Some(node) = dfs.next(&graph) {
-                dependants.push(self.graph[node].name.as_str());
+                dependants.push(self.graph[node]);
             }
         }
 

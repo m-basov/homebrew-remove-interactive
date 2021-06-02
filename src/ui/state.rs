@@ -1,4 +1,4 @@
-use crate::homebrew::{HomebrewClient, HomebrewDependencyGraph, HomebrewFormula};
+use crate::homebrew::{HomebrewClient, HomebrewFormula, HomebrewGraph};
 use anyhow::Result;
 use std::collections::HashSet;
 use tui::widgets::ListState;
@@ -6,14 +6,14 @@ use tui::widgets::ListState;
 pub struct State<'a> {
     pub selected_formula: ListState,
     pub formulae: Vec<&'a HomebrewFormula>,
-    pub graph: &'a HomebrewDependencyGraph<'a>,
-    all_formulae: &'a [HomebrewFormula],
+    pub graph: &'a HomebrewGraph,
+    pub all_formulae: &'a [HomebrewFormula],
     filter_selected: bool,
     formulae_to_delete: HashSet<&'a str>,
 }
 
 impl<'a> State<'a> {
-    pub fn new(formulae: &'a [HomebrewFormula], graph: &'a HomebrewDependencyGraph) -> State<'a> {
+    pub fn new(formulae: &'a [HomebrewFormula], graph: &'a HomebrewGraph) -> State<'a> {
         State {
             selected_formula: ListState::default(),
             formulae: formulae.iter().collect(),
@@ -66,7 +66,8 @@ impl<'a> State<'a> {
                 self.formulae_to_delete.remove(name);
             } else {
                 for dependant in self.graph.resolve_dependants(name) {
-                    self.formulae_to_delete.insert(dependant);
+                    let dependant = &self.all_formulae[dependant];
+                    self.formulae_to_delete.insert(&dependant.name);
                 }
 
                 self.formulae_to_delete.insert(name);

@@ -3,7 +3,7 @@ mod ui;
 
 use anyhow::Result;
 use atty::Stream;
-use homebrew::{FormulaeMap, HomebrewClient, HomebrewDependencyGraph};
+use homebrew::{HomebrewClient, HomebrewGraph};
 use std::process;
 use ui::UI;
 
@@ -19,8 +19,7 @@ fn main() -> Result<()> {
     }
 
     let info = HomebrewClient::load_info()?;
-    let formulae_map = FormulaeMap::build(&info.formulae);
-    let graph = HomebrewDependencyGraph::build(&formulae_map, &info.formulae);
+    let graph = HomebrewGraph::build(&info.formulae);
 
     let mut ui = UI::init(&info.formulae, &graph)?;
     ui.run()?;

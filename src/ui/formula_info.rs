@@ -1,4 +1,5 @@
 use super::{Backend, Component, State};
+use itertools::Itertools;
 use tui::{
     layout::Rect,
     style::{Color, Modifier, Style},
@@ -16,6 +17,8 @@ impl Component for FormulaInfo {
             let dependentants = state
                 .graph
                 .resolve_dependants(formula.name.as_str())
+                .into_iter()
+                .map(|idx| &state.all_formulae[idx].name)
                 .join(", ");
             let dependencies = formula.dependencies.join(", ");
 

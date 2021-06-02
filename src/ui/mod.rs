@@ -7,13 +7,13 @@ mod state;
 
 use anyhow::Result;
 use crossterm::{
-    execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    ExecutableCommand,
 };
 use std::io;
 use tui::{backend::CrosstermBackend, layout::Rect, Frame, Terminal};
 
-use crate::homebrew::{HomebrewDependencyGraph, HomebrewFormula};
+use crate::homebrew::{HomebrewFormula, HomebrewGraph};
 use events::Signal;
 use formula_info::FormulaInfo;
 use formulae_list::FormulaeList;
@@ -54,14 +54,11 @@ impl<'a> UI<'a> {
         self.teardown()
     }
 
-    pub fn init(
-        formulae: &'a [HomebrewFormula],
-        graph: &'a HomebrewDependencyGraph,
-    ) -> Result<UI<'a>> {
+    pub fn init(formulae: &'a [HomebrewFormula], graph: &'a HomebrewGraph) -> Result<UI<'a>> {
         enable_raw_mode()?;
 
         let mut stdout = io::stdout();
-        execute!(stdout, EnterAlternateScreen)?;
+        stdout.execute(EnterAlternateScreen)?;
 
         let backend = CrosstermBackend::new(stdout);
         let terminal = Terminal::new(backend)?;
@@ -74,7 +71,7 @@ impl<'a> UI<'a> {
 
     fn teardown(&mut self) -> Result<()> {
         disable_raw_mode()?;
-        execute!(self.terminal.backend_mut(), LeaveAlternateScreen)?;
+        self.terminal.backend_mut().execute(LeaveAlternateScreen)?;
         self.terminal.show_cursor()?;
         Ok(())
     }

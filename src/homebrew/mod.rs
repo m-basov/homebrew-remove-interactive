@@ -1,5 +1,5 @@
 mod api;
 mod client;
 
-pub use api::{FormulaeMap, HomebrewDependencyGraph, HomebrewFormula, HomebrewInfo};
+pub use api::{HomebrewFormula, HomebrewGraph, HomebrewInfo};
 pub use client::HomebrewClient;
